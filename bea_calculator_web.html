@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BEA Calculator - Emotional Math (Web Version)</title>
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #FF9800;
+            --success-color: #4CAF50;
+            --danger-color: #F44336;
+            --dark-color: #333;
+            --light-color: #f5f5f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji';
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            -webkit-font-feature-settings: "liga" off;
+            font-feature-settings: "liga" off;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            padding: 25px;
+        }
+
+        .calculator-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .emotional-states {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .state-category {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 14px;
+            border-left: 3px solid var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .state-category h3 {
+            margin-bottom: 15px;
+            color: var(--dark-color);
+            font-size: 1.1em;
+        }
+
+        .state-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .state-btn {
+            padding: 6px 8px;
+            border: none;
+            border-radius: 6px;
+            background: white;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            font-size: 0.75em;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            min-height: 38px;
+            word-wrap: break-word;
+            text-align: center;
+        }
+
+        .state-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-color: var(--primary-color);
+        }
+
+        .state-btn.selected {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .operators {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .operator-btn {
+            padding: 15px 20px;
+            border: none;
+            border-radius: 10px;
+            background: var(--secondary-color);
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 60px;
+        }
+
+        .operator-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .expression-display {
+            background: #263238;
+            color: #00ff41;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            min-height: 60px;
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #37474f;
+        }
+
+        .result-area {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .result {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .result-description {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            height: fit-content;
+        }
+
+        .llm-assistant {
+            background: white;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .llm-assistant h3 {
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .chat-messages {
+            max-height: 220px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f9f9f9;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .message.user {
+            background: var(--primary-color);
+            color: white;
+            margin-left: 20px;
+        }
+
+        .message.assistant {
+            background: white;
+            border: 1px solid #e0e0e0;
+            margin-right: 20px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .assistant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .help-button {
+            background: #FF9800;
+            margin-left: 5px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .chat-input button {
+            padding: 10px 15px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 25px 0;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        /* Responsive adjustments for better button fitting */
+        @media (max-width: 768px) {
+            .state-btn {
+                font-size: 0.7em;
+                padding: 4px 6px;
+                min-height: 35px;
+            }
+            .emotional-states {
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            }
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 18px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .info-panel h3 {
+            color: var(--dark-color);
+            margin-bottom: 15px;
+        }
+
+        .help-text {
+            font-size: 0.9em;
+            line-height: 1.6;
+            color: #666;
+        }
+
+        .healing-panel {
+            background: white;
+            border-radius: 8px;
+            padding: 18px;
+            border: 1px solid #e0e0e0;
+            margin-top: 15px;
+        }
+
+        .healing-panel h3 {
+            color: var(--success-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .healing-combinations {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .healing-combo {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 3px solid var(--success-color);
+        }
+
+        .healing-combo:hover {
+            background: #e8f5e8;
+            transform: translateX(2px);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+        }
+
+        .combo-title {
+            display: block;
+            font-weight: bold;
+            color: var(--dark-color);
+            margin-bottom: 4px;
+            font-size: 0.85em;
+        }
+
+        .combo-formula {
+            display: block;
+            font-size: 0.75em;
+            color: #666;
+            font-family: monospace;
+        }
+
+        .healing-guide-btn {
+            width: 100%;
+            background: var(--success-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .healing-guide-btn:hover {
+            background: #45a049;
+            transform: translateY(-1px);
+        }
+
+        .healing-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .healing-modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .healing-modal h2 {
+            color: var(--success-color);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .healing-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .healing-section h4 {
+            color: var(--dark-color);
+            margin-bottom: 10px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .emotional-states {
+                grid-template-columns: 1fr;
+            }
+            
+            .state-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .exploration-grid {
+                gap: 5px;
+            }
+            
+            .journey-path {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 BEA Calculator</h1>
+            <p>Emotional Math • 32 States • AI Assisted (Web Version)</p>
+        </div>
+
+        <div class="main-content">
+            <div class="calculator-section">
+                <div class="emotional-states" id="emotionalStates">
+                    <!-- States will be generated by JavaScript -->
+                </div>
+
+                <div class="operators">
+                    <button type="button" class="operator-btn" onclick="addOperator('⊕')" title="Combust - Ignite emotions">⊕</button>
+                    <button type="button" class="operator-btn" onclick="addOperator('⊖')" title="Balance - Create equilibrium">⊖</button>
+                    <button type="button" class="operator-btn" onclick="addOperator('⨀')" title="Amplify - Intensify emotions">⨀</button>
+                    <button type="button" class="operator-btn" onclick="addOperator('⦸')" title="Dissolve - Weaken emotions">⦸</button>
+                </div>
+
+                <div class="expression-display" id="expressionDisplay">
+                    Ready to calculate emotions...
+                </div>
+
+                <div class="result-area" id="resultArea">
+                    <div class="result" id="result">Select emotional states to begin</div>
+                    <div class="result-description" id="resultDescription">Build your emotional expression using the states and operators above</div>
+                </div>
+
+                <div class="controls">
+                    <button type="button" class="btn btn-success" onclick="calculateExpression()">🧮 Calculate</button>
+                    <button type="button" class="btn btn-secondary" onclick="clearExpression()">🗑️ Clear</button>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="llm-assistant">
+                    <div class="assistant-header">
+                        <h3 id="aiAssistantTitle">🤖 Assistant</h3>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message assistant">
+                            Hi! I can help with emotional combinations and explain results. Ask about states or operators!
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="chatInput" placeholder="Ask about emotional combinations..." onkeypress="handleChatKeyPress(event)">
+                        <button type="button" onclick="sendChatMessage()">Send</button>
+                        <button type="button" onclick="quickHelp()" title="Get quick assistance" class="help-button">?</button>
+                    </div>
+                </div>
+
+                <div class="info-panel">
+                    <h3>📚 Quick Guide</h3>
+                    <div class="help-text">
+                        <p><strong>Operators:</strong></p>
+                        <p>⊕ Combust | ⊖ Balance | ⨀ Amplify | ⦸ Dissolve</p>
+                        <br>
+                        <p>Click states → operators → calculate</p>
+                    </div>
+                </div>
+
+                <div class="healing-panel">
+                    <h3>🩹 Emotional Healing</h3>
+                    <div class="healing-combinations">
+                        <div class="healing-combo" onclick="applyHealingCombo('anger')">
+                            <span class="combo-title">😡→✨ Anger Relief</span>
+                            <span class="combo-formula">Anger ⊖ Calmness = Wonder</span>
+                        </div>
+                        <div class="healing-combo" onclick="applyHealingCombo('sadness')">
+                            <span class="combo-title">😢→💡 Sadness Relief</span>
+                            <span class="combo-formula">Sadness ⊖ Hope = Clarity</span>
+                        </div>
+                        <div class="healing-combo" onclick="applyHealingCombo('anxiety')">
+                            <span class="combo-title">😵→🤔 Anxiety Relief</span>
+                            <span class="combo-formula">Anxiety ⦸ Calmness = Curiosity</span>
+                        </div>
+                        <div class="healing-combo" onclick="applyHealingCombo('fear')">
+                            <span class="combo-title">😰→👑 Fear Relief</span>
+                            <span class="combo-formula">Fear ⊕ Valor = Confidence</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn healing-guide-btn" onclick="showHealingGuide()">💡 Healing Guide</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Healing Guide Modal -->
+    <div id="healingModal" class="healing-modal">
+        <div class="healing-modal-content">
+            <button class="close-modal" onclick="closeHealingGuide()">&times;</button>
+            <h2 style="text-align: center; color: #2c3e50; margin-bottom: 30px; font-size: 2em;">🩹 Emotional Healing Guide</h2>
+            
+            <div class="healing-section" style="margin-bottom: 25px;">
+                <h4 style="color: #e91e63; margin-bottom: 15px; font-size: 1.2em;">🧠 BEA Healing Principles</h4>
+                <div style="background: rgba(233, 30, 99, 0.05); padding: 20px; border-radius: 10px; border-left: 4px solid #e91e63;">
+                    <p style="margin: 8px 0;"><strong>Balance (⊖):</strong> Creates mathematical equilibrium using emotional IDs</p>
+                    <p style="margin: 8px 0;"><strong>Dissolve (⦸):</strong> Reduces states through minimum calculation</p>
+                    <p style="margin: 8px 0;"><strong>Combust (⊕):</strong> Transforms through additive emergence</p>
+                    <p style="margin: 8px 0;"><strong>Amplify (⨀):</strong> Intensifies using maximum plus formula</p>
+                </div>
+            </div>
+
+            <div class="healing-section">
+                <h4>⚡ Mathematical Healing Combinations</h4>
+                <p style="text-align: center; font-style: italic; color: #666; margin-bottom: 20px;">These powerful results emerge from BEA's 1+1=3 mathematical principle ✨</p>
+                <p style="background: linear-gradient(135deg, #ff9a9e, #fecfef); padding: 15px; border-radius: 12px; box-shadow: 0 4px 8px rgba(255,154,158,0.3); margin: 8px 0; color: #2c3e50; font-weight: bold;">😰→👑 <strong>For Fear:</strong> Fear ⊕ Valor = <span style="color: #2980b9;">Confidence (E[26])</span></p>
+                <p style="background: linear-gradient(135deg, #a8edea, #fed6e3); padding: 15px; border-radius: 12px; box-shadow: 0 4px 8px rgba(168,237,234,0.3); margin: 8px 0; color: #2c3e50; font-weight: bold;">🤯→🔮 <strong>For Confusion:</strong> Confusion ⨀ Clarity = <span style="color: #4285f4;">Transcendence (E[21])</span></p>
+                <p style="background: linear-gradient(135deg, #d299c2, #fef9d7); padding: 15px; border-radius: 12px; box-shadow: 0 4px 8px rgba(210,153,194,0.3); margin: 8px 0; color: #2c3e50; font-weight: bold;">😡→🧐 <strong>For Anger:</strong> Anger ⊕ Empathy = <span style="color: #ff69b4;">Interest (E[3])</span></p>
+                <p style="background: linear-gradient(135deg, #89f7fe, #66a6ff); padding: 15px; border-radius: 12px; box-shadow: 0 4px 8px rgba(137,247,254,0.3); margin: 8px 0; color: #2c3e50; font-weight: bold;">😢→🌅 <strong>For Sadness:</strong> Sadness ⊖ Peace = <span style="color: #4285f4;">Enlightenment (E[20])</span></p>
+                <p style="background: linear-gradient(135deg, #ffecd2, #fcb69f); padding: 15px; border-radius: 12px; box-shadow: 0 4px 8px rgba(255,236,210,0.3); margin: 8px 0; color: #2c3e50; font-weight: bold;">😵→🤔 <strong>For Anxiety:</strong> Anxiety ⦸ Calmness = <span style="color: #4169e1;">Curiosity (E[1])</span></p>
+                <p style="text-align: center; font-size: 0.9em; color: #7f8c8d; margin-top: 15px; font-style: italic;">Each combination uses authentic BEA mathematics to create transformative emotional emergence ✨</p>
+            </div>
+
+            <div class="healing-section" style="margin: 25px 0;">
+                <h4 style="color: #4caf50; margin-bottom: 15px; font-size: 1.2em;">🌱 Self-Care Practices</h4>
+                <div style="background: rgba(76, 175, 80, 0.05); padding: 20px; border-radius: 10px; border-left: 4px solid #4caf50;">
+                    <p style="margin: 8px 0;"><strong>Immediate Relief:</strong> Deep breathing, grounding techniques</p>
+                    <p style="margin: 8px 0;"><strong>Daily Practice:</strong> Meditation, exercise, journaling</p>
+                    <p style="margin: 8px 0;"><strong>Long-term:</strong> Therapy, support groups, healthy routines</p>
+                </div>
+            </div>
+
+            <div class="healing-section" style="margin-top: 25px;">
+                <h4 style="color: #f44336; margin-bottom: 15px; font-size: 1.2em;">🚨 When to Seek Help</h4>
+                <div style="background: rgba(244, 67, 54, 0.05); padding: 20px; border-radius: 10px; border-left: 4px solid #f44336;">
+                    <p style="margin: 8px 0;"><strong>Crisis Signs:</strong> Persistent hopelessness, self-harm thoughts</p>
+                    <p style="margin: 8px 0;"><strong>Emergency:</strong> Call 911 for immediate help</p>
+                    <p style="margin: 8px 0;"><strong>Resources:</strong> Dial 988 Suicide & Crisis Lifeline (US)</p>
+                    <p style="margin: 8px 0;"><strong>Text Support:</strong> Text HOME to 741741</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // BEA Calculator Web Version - Properly structured JavaScript
+        
+        // Emotional States Data Structure
+        const emotionalStates = {
+            baseline: [
+                { id: 0, name: 'Neutral', symbol: '😐', color: [128, 128, 128], description: 'Balanced equilibrium, no emotional charge' }
+            ],
+            cognitive: [
+                { id: 1, name: 'Curiosity', symbol: '🤔', color: [0, 100, 255], description: 'Initial exploration, seeking understanding' },
+                { id: 3, name: 'Interest', symbol: '🧐', color: [255, 140, 0], description: 'Focused attention and engagement' },
+                { id: 8, name: 'Confusion', symbol: '🤯', color: [255, 20, 147], description: 'Uncertainty and lack of clarity' },
+                { id: 17, name: 'Contemplation', symbol: '🧘‍♂️', color: [112, 128, 144], description: 'Deep reflective thinking' },
+                { 
+                    id: 19, 
+                    name: 'Clarity', 
+                    symbol: '💡',
+                    color: [255, 215, 0], 
+                    description: 'Clear understanding and insight' 
+                }
+            ],
+            peaceful: [
+                { id: 2, name: 'Calmness', symbol: '😊', color: [0, 200, 100], description: 'Balance and receptive awareness' },
+                {
+                    id: 14,
+                    name: 'Relief',
+                    symbol: '😌',
+                    color: [176, 224, 230], 
+                    description: 'Release from tension or worry'
+                },
+                { id: 18, name: 'Serenity', symbol: '🕊️', color: [176, 224, 230], description: 'Perfect peace and tranquility' },
+                { id: 24, name: 'Harmony', symbol: '☯️', color: [240, 248, 255], description: 'Perfect balance and alignment' },
+                {
+                    id: 31,
+                    name: 'Peace',
+                    symbol: '☮️',
+                    color: [255, 255, 255],
+                    description: 'Ultimate tranquility and acceptance'
+                }
+            ],
+            energetic: [
+                { id: 4, name: 'Excitement', symbol: '🎉', color: [255, 69, 0], description: 'High energy enthusiasm' },
+                { id: 27, name: 'Inspiration', symbol: '🎨', color: [255, 215, 0], description: 'Creative motivation and drive' }
+            ],
+            empowered: [
+                { id: 5, name: 'Strength', symbol: '💪', color: [139, 69, 19], description: 'Physical and emotional power' },
+                {
+                    id: 15,
+                    name: 'Valor',
+                    symbol: '🛡️',
+                    color: [139, 0, 0],
+                    description: 'Courage in action, brave determination'
+                },
+                { id: 22, name: 'Resolve', symbol: '⚔️', color: [105, 105, 105], description: 'Firm determination and commitment' },
+                {
+                    id: 26,
+                    name: 'Confidence',
+                    symbol: '👑',
+                    color: [255, 215, 0],
+                    description: 'Self-assured certainty in abilities'
+                }
+            ],
+            transcendent: [
+                { id: 6, name: 'Wonder', symbol: '✨', color: [255, 215, 0], description: 'Awe-inspiring realization, profound insight' },
+                {
+                    id: 16,
+                    name: 'Bliss',
+                    symbol: '🌟',
+                    color: [255, 255, 0],
+                    description: 'Peak happiness, transcendent joy'
+                },
+                { id: 20, name: 'Enlightenment', symbol: '🌅', color: [255, 255, 224], description: 'Profound understanding, wisdom achieved' },
+                { id: 21, name: 'Transcendence', symbol: '🔮', color: [72, 61, 139], description: 'Beyond ordinary experience, unity' }
+            ],
+            positive: [
+                { id: 7, name: 'Joy', symbol: '😄', color: [255, 192, 203], description: 'Pure happiness and contentment' },
+                { id: 28, name: 'Gratitude', symbol: '🙏', color: [240, 248, 255], description: 'Appreciation and thankfulness' },
+                { id: 29, name: 'Hope', symbol: '🌱', color: [255, 255, 0], description: 'Optimistic expectation for the future' }
+            ],
+            connected: [
+                { id: 25, name: 'Empathy', symbol: '🤗', color: [255, 105, 180], description: 'Deep understanding of others emotions' },
+                { id: 30, name: 'Love', symbol: '❤️', color: [220, 20, 60], description: 'Deep affection and connection' }
+            ],
+            melancholic: [
+                { id: 9, name: 'Sadness', symbol: '😢', color: [70, 130, 180], description: 'Acknowledgment of loss or unmet expectation' },
+                { id: 12, name: 'Melancholy', symbol: '🌧️', color: [112, 128, 144], description: 'Bittersweet reflection, thoughtful sadness' }
+            ],
+            intense: [
+                { id: 10, name: 'Anger', symbol: '😡', color: [220, 20, 60], description: 'Frustration, drive for resolution' },
+                { id: 23, name: 'Passion', symbol: '🌹', color: [220, 20, 60], description: 'Intense enthusiasm and drive' }
+            ],
+            protective: [
+                { id: 11, name: 'Fear', symbol: '😰', color: [138, 43, 226], description: 'Alert awareness of potential threat' }
+            ],
+            tense: [
+                { id: 13, name: 'Anxiety', symbol: '😵', color: [255, 165, 0], description: 'Worried anticipation, nervous energy' }
+            ]
+        };
+
+        // Global variables
+        let currentExpression = [];
+        let chatHistory = [];
+
+        // Get category emoji
+        function getCategoryEmoji(category) {
+            const emojis = {
+                'baseline': '⚖️',
+                'cognitive': '🧠',
+                'peaceful': '🕊️',
+                'energetic': '⚡',
+                'empowered': '💪',
+                'transcendent': '✨',
+                'positive': '😊',
+                'connected': '🤝',
+                'melancholic': '😔',
+                'intense': '🔥',
+                'protective': '🛡️',
+                'tense': '😰'
+            };
+            return emojis[category] || '📂';
+        }
+
+        // Initialize the application
+        function initializeApp() {
+            generateEmotionalStates();
+            console.log('BEA Calculator Web Version initialized successfully!');
+        }
+
+        // Generate emotional state buttons
+        function generateEmotionalStates() {
+            const container = document.getElementById('emotionalStates');
+            
+            Object.keys(emotionalStates).forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'state-category';
+                
+                const categoryTitle = document.createElement('h3');
+                categoryTitle.textContent = `${getCategoryEmoji(category)} ${category.charAt(0).toUpperCase() + category.slice(1)}`;
+                categoryDiv.appendChild(categoryTitle);
+                
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.className = 'state-buttons';
+                
+                emotionalStates[category].forEach(state => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'state-btn';
+                    button.innerHTML = `${state.symbol} E[${state.id}] ${state.name}`;
+                    button.title = state.description;
+                    button.onclick = () => addState(state);
+                    
+                    // Adjust font size for longer state names
+                    const buttonText = `${state.symbol} E[${state.id}] ${state.name}`;
+                    if (buttonText.length > 20) {
+                        button.style.fontSize = '0.65em';
+                    } else if (buttonText.length > 15) {
+                        button.style.fontSize = '0.7em';
+                    }
+                    
+                    // Set background color based on state color
+                    if (state.color) {
+                        const [r, g, b] = state.color;
+                        button.style.borderColor = `rgb(${r}, ${g}, ${b})`;
+                    }
+                    
+                    buttonsDiv.appendChild(button);
+                });
+                
+                categoryDiv.appendChild(buttonsDiv);
+                container.appendChild(categoryDiv);
+            });
+        }
+
+        // Add emotional state to expression
+        function addState(state) {
+            currentExpression.push({
+                type: 'state',
+                data: state
+            });
+            updateExpressionDisplay();
+        }
+
+        // Add operator to expression
+        function addOperator(operator) {
+            if (currentExpression.length > 0 && currentExpression[currentExpression.length - 1].type !== 'operator') {
+                currentExpression.push({
+                    type: 'operator',
+                    data: operator
+                });
+                updateExpressionDisplay();
+            }
+        }
+
+        // Update expression display
+        function updateExpressionDisplay() {
+            const display = document.getElementById('expressionDisplay');
+            
+            if (currentExpression.length === 0) {
+                display.textContent = 'Ready to calculate emotions...';
+                return;
+            }
+            
+            let expressionText = '';
+            currentExpression.forEach((item, index) => {
+                if (item.type === 'state') {
+                    expressionText += `${item.data.symbol} E[${item.data.id}]`;
+                } else {
+                    expressionText += ` ${item.data} `;
+                }
+            });
+            
+            display.textContent = expressionText;
+        }
+
+        // Calculate expression result
+        function calculateExpression() {
+            if (currentExpression.length === 0) {
+                showResult('No expression to calculate', 'Please add some emotional states first');
+                return;
+            }
+
+            // Check if this is a healing combination that needs special handling
+            if (currentExpression.length === 3 && 
+                currentExpression[0].type === 'state' && 
+                currentExpression[1].type === 'operator' && 
+                currentExpression[2].type === 'state') {
+                
+                // No special healing overrides - let BEA math work naturally
+                // All combinations now use true 1+1=3 mathematical emergence
+            }
+
+            // Regular calculation logic using BEA 1+1=3 principle
+            const result = performBEACalculation(currentExpression);
+            showResult(result.display, result.description);
+            
+            // Ask LLM to explain the result
+            setTimeout(() => {
+                askLLMToExplainResult(currentExpression, result);
+            }, 1000);
+        }
+
+        // Perform BEA calculation (simplified logic)
+        function performBEACalculation(expression) {
+            if (expression.length === 1 && expression[0].type === 'state') {
+                const state = expression[0].data;
+                return {
+                    display: `${state.symbol} E[${state.id}] ${state.name}`,
+                    description: state.description
+                };
+            }
+
+            // For demo purposes, we'll implement basic operator logic
+            let result = expression[0].data; // Start with first state
+            
+            for (let i = 1; i < expression.length; i += 2) {
+                if (i + 1 < expression.length) {
+                    const operator = expression[i].data;
+                    const nextState = expression[i + 1].data;
+                    result = applyOperator(result, operator, nextState);
+                }
+            }
+
+            return {
+                display: `${result.symbol} E[${result.id}] ${result.name}`,
+                description: result.description
+            };
+        }
+
+        // Apply operator logic - Pure BEA mathematical calculations
+        function applyOperator(state1, operator, state2) {
+            const allStates = getAllStates();
+            
+            switch (operator) {
+                case '⊕': // Combust - uses authentic BEA modulo arithmetic
+                    return allStates[(state1.id + state2.id) % 32] || state1;
+                case '⊖': // Balance - creates mathematical equilibrium
+                    return allStates[Math.floor((state1.id + state2.id) / 2)] || state1;
+                case '⨀': // Amplify - intensifies current state
+                    return allStates[Math.min(Math.max(state1.id, state2.id) + 2, 31)] || state1;
+                case '⦸': // Dissolve - reduces to lower states
+                    return allStates[Math.max(Math.min(state1.id, state2.id) - 1, 0)] || state1;
+                default:
+                    return state1;
+            }
+        }
+
+        // Get all states as flat array
+        function getAllStates() {
+            const states = {};
+            Object.values(emotionalStates).forEach(category => {
+                category.forEach(state => {
+                    states[state.id] = state;
+                });
+            });
+            return states;
+        }
+
+        // Show calculation result
+        function showResult(display, description) {
+            document.getElementById('result').textContent = display;
+            document.getElementById('resultDescription').textContent = description;
+        }
+
+        // Clear expression
+        function clearExpression() {
+            currentExpression = [];
+            updateExpressionDisplay();
+            showResult('Select emotional states to begin', 'Build your emotional expression using the states and operators above');
+        }
+
+        // Chat Functions
+        function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                addChatMessage('user', message);
+                input.value = '';
+                
+                // Process with simulated AI response
+                setTimeout(() => {
+                    const response = generateLLMResponseEnhanced(message);
+                    addChatMessage('assistant', response);
+                }, 800);
+            }
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        function addChatMessage(sender, message) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+            messageDiv.textContent = message;
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function askLLMForHelp() {
+            const currentExpr = currentExpression.map(item => 
+                item.type === 'state' ? `${item.data.symbol}E[${item.data.id}]` : item.data
+            ).join(' ');
+            
+            const question = currentExpr ? 
+                `Can you explain this expression: ${currentExpr}` : 
+                'Can you suggest an interesting emotional combination to try?';
+            
+            addChatMessage('user', question);
+            
+            setTimeout(() => {
+                const response = generateLLMResponse(question);
+                addChatMessage('assistant', response);
+            }, 1000);
+        }
+
+        function askLLMToExplainResult(expression, result) {
+            const exprText = expression.map(item => 
+                item.type === 'state' ? `${item.data.name}` : item.data
+            ).join(' ');
+            
+            const explanation = `The result of "${exprText}" is ${result.display}. ${result.description}`;
+            addChatMessage('assistant', explanation);
+        }
+
+        // LLM response generator
+        function generateLLMResponseEnhanced(message) {
+            return generateLLMResponse(message);
+        }
+
+        // Simulated LLM Response (replace with actual LLM integration)
+        function generateLLMResponse(message) {
+            const responses = {
+                'suggest': [
+                    "Try combining Curiosity ⊕ Excitement to create Wonder! This shows how exploration and energy can lead to awe.",
+                    "Experiment with Anger ⊖ Calmness to see how balance can transform intense emotions into Strength.",
+                    "Consider Sadness ⨀ Melancholy for a deep emotional amplification that creates profound contemplation."
+                ],
+                'explain': [
+                    "In BEA, the ⊕ (Combust) operator represents the ignition of potential when two emotions meet with intensity.",
+                    "The ⊖ (Balance) operator creates equilibrium between emotional states, often resolving conflicts.",
+                    "Amplification (⨀) intensifies existing emotions, while Dissolution (⦸) weakens or neutralizes them."
+                ],
+                'help': [
+                    "The BEA framework treats emotions as computational entities. Each state has properties like intensity and interaction weights.",
+                    "Start by selecting an emotional state, then choose an operator, then another state. The calculator will show the result!",
+                    "Try building complex expressions like E[1] ⊕ E[4] ⊖ E[2] to see how multiple operations combine."
+                ]
+            };
+
+            // Simple keyword matching for demo
+            if (message.toLowerCase().includes('suggest') || message.toLowerCase().includes('try')) {
+                return responses.suggest[Math.floor(Math.random() * responses.suggest.length)];
+            } else if (message.toLowerCase().includes('explain') || message.toLowerCase().includes('what')) {
+                return responses.explain[Math.floor(Math.random() * responses.explain.length)];
+            } else {
+                return responses.help[Math.floor(Math.random() * responses.help.length)];
+            }
+        }
+
+        function quickHelp() {
+            const quickHelpQuestions = [
+                "What does ⊕ do?",
+                "How do I start?",
+                "What's an example?",
+                "What are the operators?",
+                "How does BEA work?"
+            ];
+            
+            const randomQuestion = quickHelpQuestions[Math.floor(Math.random() * quickHelpQuestions.length)];
+            document.getElementById('chatInput').value = randomQuestion;
+            sendChatMessage();
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeApp();
+        });
+
+        // Healing Functions
+        function applyHealingCombo(type) {
+            // Clear current expression
+            clearExpression();
+            
+            // Define healing combinations with correct targeting
+            const healingCombos = {
+                'anger': {
+                    state1: getAllStates()[10], // Anger (id: 10)
+                    operator: '⊖',
+                    state2: getAllStates()[2],  // Calmness (id: 2)
+                    targetResult: getAllStates()[6], // Wonder (id: 6) - BEA Math Result
+                    message: 'Applying anger healing: Balancing rage with calmness creates wonder through BEA emergence.'
+                },
+                'sadness': {
+                    state1: getAllStates()[9],  // Sadness (id: 9)
+                    operator: '⊖',
+                    state2: getAllStates()[29], // Hope (id: 29)
+                    targetResult: getAllStates()[19], // Clarity (id: 19) - BEA Math Result
+                    message: 'Applying sadness healing: Balancing sorrow with hope creates clarity through BEA emergence.'
+                },
+                'anxiety': {
+                    state1: getAllStates()[13], // Anxiety (id: 13)
+                    operator: '⦸',
+                    state2: getAllStates()[2],  // Calmness (id: 2)
+                    targetResult: getAllStates()[1], // Curiosity (id: 1) - BEA Math Result
+                    message: 'Applying anxiety relief: Dissolving worry with calmness creates curiosity through BEA emergence.'
+                },
+                'fear': {
+                    state1: getAllStates()[11], // Fear (id: 11)
+                    operator: '⊕',
+                    state2: getAllStates()[15], // Valor (id: 15)
+                    targetResult: getAllStates()[26], // Confidence (id: 26)
+                    message: 'Applying fear transformation: Combining fear with valor creates confidence through BEA emergence.'
+                }
+            };
+            
+            const combo = healingCombos[type];
+            if (combo) {
+                // Add states and operator to expression
+                addState(combo.state1);
+                addOperator(combo.operator);
+                addState(combo.state2);
+                
+                // Show healing message
+                addChatMessage('assistant', `🩹 ${combo.message}`);
+                
+                // Let BEA mathematical calculation work naturally
+                setTimeout(() => {
+                    calculateExpression();
+                    addChatMessage('assistant', '✨ BEA mathematical emergence! Notice how the 1+1=3 principle creates meaningful healing outcomes.');
+                }, 1000);
+            }
+        }
+
+        // Special healing calculation that ensures correct results
+        function performHealingCalculation(targetResult) {
+            if (targetResult) {
+                showResult(
+                    `${targetResult.symbol} E[${targetResult.id}] ${targetResult.name}`,
+                    targetResult.description
+                );
+            } else {
+                // Fallback to regular calculation
+                calculateExpression();
+            }
+        }
+
+        function showHealingGuide() {
+            document.getElementById('healingModal').style.display = 'flex';
+            addChatMessage('assistant', '📖 Opened comprehensive healing guide. Take your time exploring these techniques.');
+        }
+
+        function closeHealingGuide() {
+            document.getElementById('healingModal').style.display = 'none';
+        }
+
+        // Enhanced healing-focused AI responses
+        function generateHealingResponse(message) {
+            const healingResponses = {
+                'healing': [
+                    "🩹 Try the Balance operator (⊖) to neutralize difficult emotions. For example: Anger ⊖ Calmness = Wonder.",
+                    "💡 The Dissolve operator (⦸) can help reduce overwhelming feelings gradually. Anxiety ⦸ Calmness = Curiosity.",
+                    "🌱 Healing often happens through transformation. Fear ⊕ Valor = Confidence shows how we can grow."
+                ],
+                'crisis': [
+                    "🚨 If you're in crisis, please reach out: Dial 988 Suicide & Crisis Lifeline (US) or text HOME to 741741.",
+                    "💙 You matter and help is available. Consider speaking with a counselor or trusted friend.",
+                    "🤗 Remember: difficult emotions are temporary. Professional support can make a real difference."
+                ],
+                'practice': [
+                    "🧘 Try this: Breathe in for 4 counts, hold for 7, exhale for 8. This activates your calm response.",
+                    "🌿 Grounding helps: Name 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste.",
+                    "📝 Journaling your emotions can help process them. What would you write about your current feeling?"
+                ]
+            };
+
+            // Check for healing-related keywords
+            const lowerMessage = message.toLowerCase();
+            if (lowerMessage.includes('heal') || lowerMessage.includes('help') || lowerMessage.includes('hurt')) {
+                return healingResponses.healing[Math.floor(Math.random() * healingResponses.healing.length)];
+            } else if (lowerMessage.includes('crisis') || lowerMessage.includes('emergency') || lowerMessage.includes('suicide')) {
+                return healingResponses.crisis[Math.floor(Math.random() * healingResponses.crisis.length)];
+            } else if (lowerMessage.includes('practice') || lowerMessage.includes('technique') || lowerMessage.includes('exercise')) {
+                return healingResponses.practice[Math.floor(Math.random() * healingResponses.practice.length)];
+            }
+            
+            return null; // Fall back to regular responses
+        }
+
+        // Override the original response generator to include healing responses
+        const originalGenerateLLMResponse = generateLLMResponse;
+        generateLLMResponse = function(message) {
+            const healingResponse = generateHealingResponse(message);
+            if (healingResponse) {
+                return healingResponse;
+            }
+            return originalGenerateLLMResponse(message);
+        };
+
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('healingModal');
+            if (event.target === modal) {
+                closeHealingGuide();
+            }
+        });
+    </script>
+</body>
+</html>
+
+
